@@ -31,16 +31,18 @@ EventMonitor::EventMonitor(QObject *parent) : QThread(parent)
 
 void EventMonitor::run()
 {
-    Display* display = XOpenDisplay(0);
-    if (display == 0) {
+    Display *display = XOpenDisplay(nullptr);
+    if (display == nullptr)
+    {
         fprintf(stderr, "unable to open display\n");
         return;
     }
 
     // Receive from ALL clients, including future clients.
     XRecordClientSpec clients = XRecordAllClients;
-    XRecordRange* range = XRecordAllocRange();
-    if (range == 0) {
+    XRecordRange *range = XRecordAllocRange();
+    if (range == nullptr)
+    {
         fprintf(stderr, "unable to allocate XRecordRange\n");
         return;
     }
@@ -48,11 +50,12 @@ void EventMonitor::run()
     // Receive KeyPress, KeyRelease, ButtonPress, ButtonRelease and MotionNotify events.
     memset(range, 0, sizeof(XRecordRange));
     range->device_events.first = KeyPress;
-    range->device_events.last  = MotionNotify;
+    range->device_events.last = MotionNotify;
 
     // And create the XRECORD context.
     XRecordContext context = XRecordCreateContext(display, 0, &clients, 1, &range, 1);
-    if (context == 0) {
+    if (context == 0)
+    {
         fprintf(stderr, "XRecordCreateContext failed\n");
         return;
     }
@@ -60,61 +63,63 @@ void EventMonitor::run()
 
     XSync(display, True);
 
-    Display* display_datalink = XOpenDisplay(0);
-    if (display_datalink == 0) {
+    Display *display_datalink = XOpenDisplay(nullptr);
+    if (display_datalink == nullptr)
+    {
         fprintf(stderr, "unable to open second display\n");
         return;
     }
 
-    if (!XRecordEnableContext(display_datalink, context,  callback, (XPointer) this)) {
+    if (!XRecordEnableContext(display_datalink, context, callback, (XPointer)this))
+    {
         fprintf(stderr, "XRecordEnableContext() failed\n");
         return;
     }
 }
 
-void EventMonitor::callback(XPointer ptr, XRecordInterceptData* data)
+void EventMonitor::callback(XPointer ptr, XRecordInterceptData *data)
 {
-    ((EventMonitor *) ptr)->handleRecordEvent(data);
+    ((EventMonitor *)ptr)->handleRecordEvent(data);
 }
 
-void EventMonitor::handleRecordEvent(XRecordInterceptData* data)
+void EventMonitor::handleRecordEvent(XRecordInterceptData *data)
 {
-    if (data->category == XRecordFromServer) {
-        xEvent * event = (xEvent *)data->data;
-        switch (event->u.u.type) {
+    if (data->category == XRecordFromServer)
+    {
+        xEvent *event = (xEvent *)data->data;
+        switch (event->u.u.type)
+        {
         case ButtonPress:
-            if (filterWheelEvent(event->u.u.detail)) {
+            if (filterWheelEvent(event->u.u.detail))
+            {
                 isPress = true;
                 emit buttonPress(
-                    event->u.keyButtonPointer.rootX, 
+                    event->u.keyButtonPointer.rootX,
                     event->u.keyButtonPointer.rootY);
             }
-            
             break;
         case MotionNotify:
-            if (isPress) {
+            if (isPress)
+            {
                 emit buttonDrag(
-                    event->u.keyButtonPointer.rootX, 
+                    event->u.keyButtonPointer.rootX,
                     event->u.keyButtonPointer.rootY);
             }
-            
             break;
         case ButtonRelease:
-            if (filterWheelEvent(event->u.u.detail)) {
+            if (filterWheelEvent(event->u.u.detail))
+            {
                 isPress = false;
                 emit buttonRelease(
-                    event->u.keyButtonPointer.rootX, 
+                    event->u.keyButtonPointer.rootX,
                     event->u.keyButtonPointer.rootY);
             }
-            
             break;
         case KeyPress:
-            emit keyPress(((unsigned char*) data->data)[1]);
-            
+            emit keyPress(((unsigned char *)data->data)[1]);
             break;
         case KeyRelease:
-            emit keyRelease(((unsigned char*) data->data)[1]);
-            
+            emit keyRelease(((unsigned char *)data->data)[1]);
             break;
         default:
             break;

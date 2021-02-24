@@ -4,3 +4,5 @@ moc_*.cpp
 *.o
 build/
 *.qm
+*.user
+.vscode

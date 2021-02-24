@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ 
+ */
 
 #ifndef EVENTMONITOR_H
 #define EVENTMONITOR_H
@@ -29,23 +29,23 @@
 #include <X11/extensions/record.h>
 
 // Virtual button codes that are not defined by X11.
-#define Button1			1
-#define Button2			2
-#define Button3			3
-#define WheelUp			4
-#define WheelDown		5
-#define WheelLeft		6
-#define WheelRight		7
-#define XButton1		8
-#define XButton2		9
+#define Button1 1
+#define Button2 2
+#define Button3 3
+#define WheelUp 4
+#define WheelDown 5
+#define WheelLeft 6
+#define WheelRight 7
+#define XButton1 8
+#define XButton2 9
 
 class EventMonitor : public QThread
 {
     Q_OBJECT
 
 public:
-    EventMonitor(QObject *parent = 0);
-    
+    EventMonitor(QObject *parent = nullptr);
+
 signals:
     void buttonPress(int x, int y);
     void buttonDrag(int x, int y);
@@ -55,10 +55,10 @@ signals:
 
 protected:
     bool filterWheelEvent(int detail);
-    static void callback(XPointer trash, XRecordInterceptData* data);
+    static void callback(XPointer trash, XRecordInterceptData *data);
     void handleRecordEvent(XRecordInterceptData *);
     void run();
-    
+
 private:
     bool isPress;
 };
